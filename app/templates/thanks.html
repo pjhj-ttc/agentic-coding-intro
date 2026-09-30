@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Thank you · Tip Portal{% endblock %}
+
+{% block content %}
+  <h1>Thank you</h1>
+  <p>Your tip has reached our newsroom. If you left contact details, a journalist may get in touch.</p>
+  <p><a href="{{ url_for('index') }}">Send another tip</a></p>
+{% endblock %}

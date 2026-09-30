@@ -2,5 +2,30 @@
 
 {% block content %}
   <h1>Send us a confidential tip</h1>
-  <p>The tip portal is under construction. Your job today: build it.</p>
+  <p>We protect our sources. You can stay completely anonymous.</p>
+
+  {% for error in errors %}
+    <p class="error">{{ error }}</p>
+  {% endfor %}
+
+  <form method="post">
+    <label for="subject">Subject</label>
+    <input id="subject" name="subject" maxlength="200" required value="{{ tip.subject or '' }}">
+
+    <label for="body">Your tip</label>
+    <textarea id="body" name="body" maxlength="10000" required>{{ tip.body or '' }}</textarea>
+
+    <label for="contact_method">How can we reach you? (optional)</label>
+    <select id="contact_method" name="contact_method">
+      <option value="">Stay anonymous</option>
+      {% for method, label in [("email", "Email"), ("phone", "Phone"), ("signal", "Signal")] %}
+        <option value="{{ method }}" {% if tip.contact_method == method %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="contact_value">Email, phone number or Signal number</label>
+    <input id="contact_value" name="contact_value" maxlength="200" value="{{ tip.contact_value or '' }}">
+
+    <button type="submit">Send tip</button>
+  </form>
 {% endblock %}

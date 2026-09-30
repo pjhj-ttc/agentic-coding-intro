@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Editor · Tip Portal{% endblock %}
+
+{% block content %}
+  <h1>Incoming tips</h1>
+
+  {% if not tips %}
+    <p>No tips yet.</p>
+  {% else %}
+    <table>
+      <thead>
+        <tr><th>Received</th><th>Tip</th><th>Contact</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for tip in tips %}
+          <tr>
+            <td>{{ tip.created_at }}</td>
+            <td><strong>{{ tip.subject }}</strong><br>{{ tip.body }}</td>
+            <td>{% if tip.contact_method %}{{ tip.contact_method }}: {{ tip.contact_value }}{% else %}Anonymous{% endif %}</td>
+            <td>{{ tip.status }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
