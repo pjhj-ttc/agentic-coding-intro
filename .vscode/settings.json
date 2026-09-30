@@ -1,0 +1,24 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.testing.pytestEnabled": true,
+  "workbench.editorAssociations": {
+    "**/exercises/*.md": "vscode.markdown.preview.editor",
+    "**/guides/*.md": "vscode.markdown.preview.editor",
+    "**/README.md": "vscode.markdown.preview.editor"
+  },
+  "chat.useAgentsMdFile": true,
+  "chat.tools.terminal.autoApprove": {
+    "git push": false,
+    "git reset": false,
+    "rm": false,
+    "Remove-Item": false,
+    "del": false,
+    "curl": false,
+    "Invoke-WebRequest": false
+  },
+  "chat.tools.edits.autoApprove": {
+    "**/.env": false,
+    "**/.vscode/**": false,
+    "**/.github/**": false
+  }
+}

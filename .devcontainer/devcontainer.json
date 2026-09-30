@@ -1,0 +1,14 @@
+{
+  "name": "agentic-coding-intro",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "pip install -r requirements.txt && cp -n .env.example .env && python -m flask --app app init-db && python -m flask --app app seed",
+  "forwardPorts": [5000],
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "GitHub.copilot-chat"],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  }
+}
