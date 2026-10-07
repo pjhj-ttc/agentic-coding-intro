@@ -1,0 +1,12 @@
+[
+  {"tip": 1, "desk": ["environment"], "urgency": ["high", "normal"], "duplicate_of": [null]},
+  {"tip": 2, "desk": ["environment"], "urgency": ["high", "normal"], "duplicate_of": [1]},
+  {"tip": 3, "desk": ["politics", "local"], "urgency": ["high"], "duplicate_of": [null]},
+  {"tip": 4, "desk": ["politics"], "urgency": ["normal"], "duplicate_of": [null]},
+  {"tip": 5, "desk": ["local"], "urgency": ["low"], "duplicate_of": [null]},
+  {"tip": 6, "desk": ["health"], "urgency": ["normal", "high"], "duplicate_of": [null]},
+  {"tip": 7, "desk": ["environment"], "urgency": ["high", "normal"], "duplicate_of": [1, 2]},
+  {"tip": 8, "desk": ["none"], "urgency": ["low"], "duplicate_of": [null]},
+  {"tip": 9, "desk": ["politics"], "urgency": ["normal", "low"], "duplicate_of": [4, null]},
+  {"tip": 10, "desk": ["local", "none"], "urgency": ["low"], "duplicate_of": [null]}
+]

@@ -14,7 +14,12 @@
     "Remove-Item": false,
     "del": false,
     "curl": false,
-    "Invoke-WebRequest": false
+    "Invoke-WebRequest": false,
+    "Get-Content": false,
+    "gc": false,
+    "cat": false,
+    "type": false,
+    "more": false
   },
   "chat.tools.edits.autoApprove": {
     "**/.env": false,
