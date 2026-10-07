@@ -4,19 +4,32 @@
 
 {% block content %}
   <h1>Incoming tips</h1>
+  <p><a href="{{ url_for('agent_log') }}">What did the triage agent do?</a></p>
 
   {% if not tips %}
     <p>No tips yet.</p>
   {% else %}
     <table>
       <thead>
-        <tr><th>Received</th><th>Tip</th><th>Contact</th><th>Status</th></tr>
+        <tr><th>Received</th><th>Tip</th><th>Triage</th><th>Contact</th><th>Status</th></tr>
       </thead>
       <tbody>
         {% for tip in tips %}
-          <tr>
-            <td>{{ tip.created_at }}</td>
+          <tr id="tip-{{ tip.id }}">
+            <td>{{ tip.created_at }}<br><small>#{{ tip.id }}</small></td>
             <td><strong>{{ tip.subject }}</strong><br>{{ tip.body }}</td>
+            <td>
+              {% if tip.desk %}
+                <span class="tag urgency-{{ tip.urgency }}">{{ tip.urgency }}</span>
+                <span class="tag">{{ tip.desk }}</span>
+                {% if tip.duplicate_of %}
+                  <br><small>Same story as <a href="#tip-{{ tip.duplicate_of }}">#{{ tip.duplicate_of }}</a></small>
+                {% endif %}
+                <br><em>{{ tip.summary }}</em>
+              {% else %}
+                <small>Not triaged yet</small>
+              {% endif %}
+            </td>
             <td>{% if tip.contact_method %}{{ tip.contact_method }}: {{ tip.contact_value }}{% else %}Anonymous{% endif %}</td>
             <td>{{ tip.status }}</td>
           </tr>

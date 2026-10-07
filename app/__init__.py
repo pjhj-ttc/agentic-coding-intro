@@ -1,9 +1,10 @@
+import json
 import logging
 import os
 
 from flask import Flask, redirect, render_template, request, url_for
 
-from . import db
+from . import db, triage
 
 MAX_SUBJECT = 200
 MAX_BODY = 10_000
@@ -55,6 +56,12 @@ def create_app(test_config=None):
 
     os.makedirs(app.instance_path, exist_ok=True)
     db.init_app(app)
+    triage.init_app(app)
+
+    @app.template_filter("readable_json")
+    def readable_json(value, indent=None):
+        # Unlike tojson, keeps Ø and ' as they are; the template still HTML-escapes the result
+        return json.dumps(value, ensure_ascii=False, indent=indent)
 
     @app.route("/", methods=["GET", "POST"])
     def index():
@@ -81,9 +88,24 @@ def create_app(test_config=None):
     @app.route("/editor")
     def editor():
         tips = db.get_db().execute(
-            "SELECT * FROM tips ORDER BY created_at DESC, id DESC"
+            "SELECT tips.*, triage.desk, triage.urgency, triage.duplicate_of, triage.summary"
+            " FROM tips LEFT JOIN triage ON triage.tip_id = tips.id"
+            " ORDER BY tips.created_at DESC, tips.id DESC"
         ).fetchall()
         return render_template("editor.html", tips=tips)
+
+    @app.route("/editor/log")
+    def agent_log():
+        events = db.get_db().execute(
+            "SELECT * FROM agent_log ORDER BY id"
+        ).fetchall()
+        runs = {}
+        for event in events:
+            entry = dict(event)
+            entry["detail"] = json.loads(entry["detail"]) if entry["detail"] else None
+            runs.setdefault(event["run_id"], []).append(entry)
+        # newest run first, events within a run in order
+        return render_template("agent_log.html", runs=list(reversed(runs.items())))
 
     @app.errorhandler(413)
     def too_large(e):

@@ -64,3 +64,24 @@ th, td {
 .error {
   color: #a00;
 }
+
+.tag {
+  display: inline-block;
+  padding: 0 0.4rem;
+  border-radius: 0.3rem;
+  background: #e8e7e5;
+  font-size: 0.85rem;
+}
+
+.urgency-high {
+  background: #f3c6c6;
+}
+
+.urgency-low {
+  background: #e3ece6;
+}
+
+.log pre {
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+}

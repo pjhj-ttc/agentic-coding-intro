@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Agent log · Tip Portal{% endblock %}
+
+{% block content %}
+  <h1>What the triage agent did</h1>
+  <p><a href="{{ url_for('editor') }}">Back to the tips</a></p>
+
+  {% if not runs %}
+    <p>The agent hasn't run yet.</p>
+  {% endif %}
+
+  {% for run_id, events in runs %}
+    {% set tokens = events | selectattr("event", "equalto", "model_call")
+                           | map(attribute="detail") | map(attribute="usage")
+                           | map(attribute="total_tokens", default=0) | sum %}
+    <h2>Run {{ run_id }} <small>· {{ events[0].created_at }} · {{ tokens }} tokens</small></h2>
+    <table class="log">
+      <thead>
+        <tr><th>Tip</th><th>Event</th><th>Details</th></tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+          <tr class="event-{{ e.event }}">
+            <td>{% if e.tip_id %}<a href="{{ url_for('editor') }}#tip-{{ e.tip_id }}">#{{ e.tip_id }}</a>{% endif %}</td>
+            <td>
+              {% if e.event == "model_call" %}model call
+              {% elif e.event == "tool_call" %}<strong>{{ e.name }}</strong>
+              {% else %}error{% if e.name %} in {{ e.name }}{% endif %}{% endif %}
+            </td>
+            <td>
+              {% if e.event == "model_call" %}
+                {{ e.detail.usage.total_tokens | default("?") }} tokens{% if e.detail.tool_calls %}, asks for: {{ e.detail.tool_calls | join(", ") }}{% endif %}
+                {% if e.detail.content %}<br><em>{{ e.detail.content }}</em>{% endif %}
+              {% elif e.event == "tool_call" %}
+                <details>
+                  <summary>{{ e.detail.arguments | readable_json }}</summary>
+                  <pre>{{ e.detail.result | readable_json(indent=2) }}</pre>
+                </details>
+              {% else %}
+                <span class="error">{{ e.detail.error }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+{% endblock %}
