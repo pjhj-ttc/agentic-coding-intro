@@ -8,6 +8,11 @@ def all_tips(app):
         return get_db().execute("SELECT * FROM tips").fetchall()
 
 
+def all_sources(app):
+    with app.app_context():
+        return get_db().execute("SELECT * FROM sources").fetchall()
+
+
 def test_submit_anonymous_tip(client, app):
     response = client.post("/", data={"subject": "Hello", "body": "A tip"})
     assert response.status_code == 302
@@ -15,8 +20,8 @@ def test_submit_anonymous_tip(client, app):
 
     [tip] = all_tips(app)
     assert tip["subject"] == "Hello"
-    assert tip["contact_method"] is None
     assert tip["status"] == "new"
+    assert all_sources(app) == []
 
 
 def test_submit_tip_with_contact(client, app):
@@ -25,14 +30,29 @@ def test_submit_tip_with_contact(client, app):
         "contact_method": "signal", "contact_value": "+45 00 00 00 00",
     })
     [tip] = all_tips(app)
-    assert tip["contact_method"] == "signal"
-    assert tip["contact_value"] == "+45 00 00 00 00"
+    [source] = all_sources(app)
+    assert source["tip_id"] == tip["id"]
+    assert source["contact_method"] == "signal"
+    assert source["contact_value"] == "+45 00 00 00 00"
 
 
 def test_anonymous_tip_drops_contact_value(client, app):
     client.post("/", data={"subject": "Hello", "body": "A tip", "contact_value": "me@example.com"})
-    [tip] = all_tips(app)
-    assert tip["contact_value"] is None
+    assert all_sources(app) == []
+
+
+def test_contact_details_are_not_stored_with_the_tip(app):
+    with app.app_context():
+        columns = [r["name"] for r in get_db().execute("PRAGMA table_info(tips)")]
+    assert "contact_method" not in columns and "contact_value" not in columns
+
+
+def test_editor_shows_contact_details(client, app):
+    client.post("/", data={
+        "subject": "Hello", "body": "A tip",
+        "contact_method": "email", "contact_value": "source@example.com",
+    })
+    assert "email: source@example.com" in client.get("/editor").get_data(as_text=True)
 
 
 def test_empty_form_is_rejected(client, app):

@@ -81,6 +81,19 @@ th, td {
   background: #e3ece6;
 }
 
+.warning {
+  background: #f6e3b4;
+}
+
+td form {
+  margin-top: 0.5rem;
+}
+
+td form button {
+  margin-top: 0.3rem;
+  padding: 0.3rem 0.8rem;
+}
+
 .log pre {
   white-space: pre-wrap;
   font-size: 0.8rem;

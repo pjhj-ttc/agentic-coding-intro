@@ -17,11 +17,15 @@
         {% for tip in tips %}
           <tr id="tip-{{ tip.id }}">
             <td>{{ tip.created_at }}<br><small>#{{ tip.id }}</small></td>
-            <td><strong>{{ tip.subject }}</strong><br>{{ tip.body }}</td>
+            <td>
+              <strong>{{ tip.subject }}</strong><br>{{ tip.body }}
+              {% if tip.flagged %}<br><span class="tag warning">Contains instructions aimed at the triage system</span>{% endif %}
+            </td>
             <td>
               {% if tip.desk %}
                 <span class="tag urgency-{{ tip.urgency }}">{{ tip.urgency }}</span>
                 <span class="tag">{{ tip.desk }}</span>
+                {% if tip.suggest_escalation %}<span class="tag urgency-high">escalation suggested</span>{% endif %}
                 {% if tip.duplicate_of %}
                   <br><small>Same story as <a href="#tip-{{ tip.duplicate_of }}">#{{ tip.duplicate_of }}</a></small>
                 {% endif %}
@@ -31,7 +35,17 @@
               {% endif %}
             </td>
             <td>{% if tip.contact_method %}{{ tip.contact_method }}: {{ tip.contact_value }}{% else %}Anonymous{% endif %}</td>
-            <td>{{ tip.status }}</td>
+            <td>
+              {{ tip.status }}
+              {% if tip.escalated_by %}
+                <br><small>by {{ tip.escalated_by }}<br>{{ tip.escalated_at }}</small>
+              {% elif tip.suggest_escalation %}
+                <form method="post" action="{{ url_for('escalate', tip_id=tip.id) }}">
+                  <input name="editor" placeholder="Your name" maxlength="80" required aria-label="Your name">
+                  <button type="submit">Escalate</button>
+                </form>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

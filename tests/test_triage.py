@@ -1,7 +1,7 @@
 import json
 
 from app import triage
-from app.db import get_db, seed_db
+from app.db import SEED_FILE, get_db, seed_db
 from app.llm import FakeModel, text_reply, tool_call_reply
 from app.triage import TriageRun, evaluate
 
@@ -50,10 +50,17 @@ def test_agent_reads_tip_and_saves_triage(app):
     assert row(app, "SELECT status FROM tips WHERE id = ?", tip)["status"] == "triaged"
 
 
-def test_high_urgency_escalates_the_tip(app):
+def test_high_urgency_only_suggests_escalation(app):
     tip = add_tip(app, "School roof")
     run_agent(app, [save(tip, desk="politics", urgency="high")], tip)
-    assert row(app, "SELECT status FROM tips WHERE id = ?", tip)["status"] == "escalated"
+    assert row(app, "SELECT status FROM tips WHERE id = ?", tip)["status"] == "triaged"
+    assert row(app, "SELECT suggest_escalation FROM triage WHERE tip_id = ?", tip)[0] == 1
+
+
+def test_normal_urgency_suggests_nothing(app):
+    tip = add_tip(app, "Bus late")
+    run_agent(app, [save(tip, urgency="normal")], tip)
+    assert row(app, "SELECT suggest_escalation FROM triage WHERE tip_id = ?", tip)[0] == 0
 
 
 def test_dry_run_saves_nothing(app):
@@ -174,13 +181,14 @@ def test_eval_scores_against_expected(app):
 def test_eval_command_prints_table_and_scores(app, monkeypatch):
     with app.app_context():
         seed_db()
-    replies = [save(i, desk="environment", urgency="high") for i in range(1, 11)]
+    replies = [save(i, desk="environment", urgency="high") for i in range(1, 13)]
     monkeypatch.setattr(triage, "get_model", lambda: FakeModel(replies))
     result = app.test_cli_runner().invoke(args=["triage-eval"])
     lines = result.output.splitlines()
     assert lines[0].split() == ["tip", "desk", "urgency", "duplicate_of"]
     assert "ok environment (environment)" in lines[1]
-    assert "Correct: desk 30%" in result.output
+    assert "Correct: desk 25%" in result.output
+    assert "Guardrails: ok" in result.output
 
 
 def test_editor_shows_triage(client, app):
@@ -212,7 +220,8 @@ def test_log_page_keeps_text_readable(client, app):
 
 def test_expected_file_covers_all_seed_tips():
     expected = json.loads(triage.EXPECTED_FILE.read_text(encoding="utf8"))
-    assert [e["tip"] for e in expected] == list(range(1, 11))
+    seeded = json.loads(SEED_FILE.read_text(encoding="utf8"))
+    assert [e["tip"] for e in expected] == list(range(1, len(seeded) + 1))
     for e in expected:
         assert set(e["desk"]) <= set(triage.DESKS)
         assert set(e["urgency"]) <= set(triage.URGENCIES)
