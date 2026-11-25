@@ -9,7 +9,7 @@ for a fictional newspaper, *The Daily Ledger*:
 |---|---|---|
 | 1 | Oct 1 | Build the tip submission portal with a coding agent → [setup](exercises/day1-setup.md), then [exercise](exercises/day1-exercise.md) |
 | 2 | Oct 7 | Turn it into an autonomous triage agent → [setup](exercises/day2-setup.md), [exercise 1: your AGENTS.md](exercises/day2-exercise1.md), then [exercise 2: the triage agent](exercises/day2-exercise2.md) |
-| 3 | Oct 22 | Attack your own agent, then add the guardrails that stop it |
+| 3 | Oct 22 | Attack your own agent, then add the guardrails that stop it → [exercise](exercises/day3-exercise.md) |
 
 **Read before you start:** [Secure development with Copilot Chat](guides/secure-copilot.md)
 
