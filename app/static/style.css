@@ -81,7 +81,84 @@ th, td {
   background: #e3ece6;
 }
 
-.log pre {
-  white-space: pre-wrap;
+/* Agent log */
+
+.run {
+  margin-top: 2.5rem;
+}
+
+.run h2 {
+  margin-bottom: 0;
+}
+
+.run-meta {
+  margin-top: 0.25rem;
+  color: #666;
+}
+
+.log-tip {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-left: 4px solid #1d2a3a;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.log-tip.has-error {
+  border-left-color: #a00;
+}
+
+.log-tip h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.log-summary {
+  margin: 0.4rem 0 0;
+  font-style: italic;
+}
+
+.steps {
+  margin: 0.75rem 0 0;
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.steps li {
+  margin: 0.3rem 0;
+}
+
+.step-model {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.step-model blockquote {
+  margin: 0.25rem 0;
+  padding-left: 0.6rem;
+  border-left: 2px solid #ccc;
+  color: #444;
+}
+
+.step-tool summary {
+  cursor: pointer;
+}
+
+.raw p {
+  margin: 0.5rem 0 0;
   font-size: 0.8rem;
+  color: #666;
+}
+
+.raw pre {
+  margin: 0.2rem 0;
+  padding: 0.5rem;
+  background: #f2f2ef;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.8rem;
+}
+
+.error-tag {
+  background: #f3c6c6;
 }
