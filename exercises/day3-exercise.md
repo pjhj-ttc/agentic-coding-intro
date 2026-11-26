@@ -34,6 +34,26 @@ The prompts below are suggestions. Rephrase them in your own words if you like, 
   git switch -c my-day3-work origin/day2-solution
   ```
 
+- **Tip · bring your own branch up to date with the latest `main`.** The course repo can change
+  after you cloned it (for example, a newer version of this guide). Save your work, then fetch and
+  merge:
+
+  ```powershell
+  git add -A
+  git commit -m "Save my work"
+  git fetch
+  git merge origin/main
+  ```
+
+  Your own work stays; Git adds what is new on `main`. If Git reports a **conflict** (two versions of
+  the same lines), it will not break anything: run `git merge --abort` and everything is back as it
+  was. Note that `main` now also contains the reference solution for Days 1 and 2, so conflicts are
+  likely if your code differs from it. In that case, just take the latest guide:
+
+  ```powershell
+  git checkout origin/main -- exercises/day3-exercise.md
+  ```
+
 - Check that the AI model is reachable. This command should say that tool calling works (your key
   is still in `C:\Users\<your name>\.tip-portal\key.txt`):
 
