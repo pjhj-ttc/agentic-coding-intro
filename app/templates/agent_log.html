@@ -34,40 +34,79 @@
     <p>The agent hasn't run yet.</p>
   {% endif %}
 
-  {% for run_id, events in runs %}
-    {% set tokens = events | selectattr("event", "equalto", "model_call")
-                           | map(attribute="detail") | map(attribute="usage")
-                           | map(attribute="total_tokens", default=0) | sum %}
-    <h2>Run {{ run_id }} <small>· {{ events[0].created_at }} · {{ tokens }} tokens</small></h2>
-    <table class="log">
-      <thead>
-        <tr><th>Tip</th><th>Event</th><th>Details</th></tr>
-      </thead>
-      <tbody>
-        {% for e in events %}
-          <tr class="event-{{ e.event }}">
-            <td>{% if e.tip_id %}<a href="{{ url_for('editor') }}#tip-{{ e.tip_id }}">#{{ e.tip_id }}</a>{% endif %}</td>
-            <td>
-              {% if e.event == "model_call" %}model call
-              {% elif e.event == "tool_call" %}<strong>{{ e.name }}</strong>
-              {% else %}error{% if e.name %} in {{ e.name }}{% endif %}{% endif %}
-            </td>
-            <td>
+  {% for run in runs %}
+    <section class="run">
+      <h2>Run {{ run.id }}</h2>
+      <p class="run-meta">
+        Started {{ run.started }} · {{ run.tips | length }} tip{{ "s" if run.tips | length != 1 }}
+        · {{ "{:,}".format(run.tokens) }} tokens
+      </p>
+
+      {% for tip_id, events in run.tips.items() %}
+        {% set saved = events | selectattr("name", "equalto", "save_triage")
+                              | selectattr("event", "equalto", "tool_call") | list | last %}
+        {% set errors = events | selectattr("event", "equalto", "error") | list %}
+        <article class="log-tip{% if errors %} has-error{% endif %}">
+          <h3>
+            {% if tip_id %}<a href="{{ url_for('editor') }}#tip-{{ tip_id }}">Tip #{{ tip_id }}</a>{% else %}No tip{% endif %}
+            {% if saved %}
+              {% set t = saved.detail.arguments %}
+              <span class="tag urgency-{{ t.urgency }}">{{ t.urgency }}</span>
+              <span class="tag">{{ t.desk }}</span>
+              {% if t.duplicate_of %}<small>same story as #{{ t.duplicate_of }}</small>{% endif %}
+            {% elif errors %}
+              <span class="tag error-tag">failed</span>
+            {% else %}
+              <span class="tag">not saved</span>
+            {% endif %}
+          </h3>
+          {% if saved %}<p class="log-summary">{{ saved.detail.arguments.summary }}</p>{% endif %}
+
+          <ol class="steps">
+            {% for e in events %}
               {% if e.event == "model_call" %}
-                {{ e.detail.usage.total_tokens | default("?") }} tokens{% if e.detail.tool_calls %}, asks for: {{ e.detail.tool_calls | join(", ") }}{% endif %}
-                {% if e.detail.content %}<br><em>{{ e.detail.content }}</em>{% endif %}
+                <li class="step-model">
+                  Model thought ({{ e.detail.usage.total_tokens | default("?") }} tokens){% if e.detail.tool_calls %} and asked for {{ e.detail.tool_calls | join(", ") }}{% endif %}
+                  {% if e.detail.content %}<blockquote>{{ e.detail.content }}</blockquote>{% endif %}
+                </li>
               {% elif e.event == "tool_call" %}
-                <details>
-                  <summary>{{ e.detail.arguments | readable_json }}</summary>
-                  <pre>{{ e.detail.result | readable_json(indent=2) }}</pre>
-                </details>
+                {% set a = e.detail.arguments or {} %}
+                {% set r = e.detail.result %}
+                <li class="step-tool">
+                  <details>
+                    <summary>
+                      <strong>{{ e.name }}</strong> —
+                      {% if e.name == "get_tip" and r is mapping and r.subject %}
+                        read “{{ r.subject }}”
+                      {% elif e.name == "search_tips" %}
+                        searched “{{ a.query }}” →
+                        {% if r is sequence and r is not string and r %}
+                          {{ r | length }} match{{ "es" if r | length != 1 }}:
+                          {% for m in r %}#{{ m.id }}{% if not loop.last %}, {% endif %}{% endfor %}
+                        {% else %}no matches{% endif %}
+                      {% elif e.name == "save_triage" %}
+                        saved {{ a.desk }} / {{ a.urgency }}{% if a.duplicate_of %}, duplicate of #{{ a.duplicate_of }}{% endif %}
+                      {% else %}
+                        {{ a | readable_json }}
+                      {% endif %}
+                    </summary>
+                    <div class="raw">
+                      <p>Arguments</p>
+                      <pre>{{ a | readable_json(indent=2) }}</pre>
+                      <p>Result</p>
+                      <pre>{{ r | readable_json(indent=2) }}</pre>
+                    </div>
+                  </details>
+                </li>
               {% else %}
-                <span class="error">{{ e.detail.error }}</span>
+                <li class="step-error error">
+                  Error{% if e.name %} in <strong>{{ e.name }}</strong>{% endif %}: {{ e.detail.error }}
+                </li>
               {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            {% endfor %}
+          </ol>
+        </article>
+      {% endfor %}
+    </section>
   {% endfor %}
 {% endblock %}

@@ -131,8 +131,14 @@ def create_app(test_config=None):
         runs = {}
         for event in events:
             entry = dict(event)
-            entry["detail"] = json.loads(entry["detail"]) if entry["detail"] else None
-            runs.setdefault(event["run_id"], []).append(entry)
+            entry["detail"] = json.loads(entry["detail"]) if entry["detail"] else {}
+            run = runs.setdefault(event["run_id"], {
+                "id": event["run_id"], "started": event["created_at"], "tokens": 0, "tips": {},
+            })
+            if entry["event"] == "model_call":
+                run["tokens"] += (entry["detail"].get("usage") or {}).get("total_tokens") or 0
+            # one block per tip, in the order the agent worked on them
+            run["tips"].setdefault(event["tip_id"], []).append(entry)
 
         # The chain of custody per tip: arrival, every agent run, who escalated and when
         custody = {}
@@ -145,7 +151,7 @@ def create_app(test_config=None):
             custody.setdefault((event["tip_id"], event["subject"]), []).append(entry)
 
         # newest run first, events within a run in order
-        return render_template("agent_log.html", runs=list(reversed(runs.items())),
+        return render_template("agent_log.html", runs=list(reversed(runs.values())),
                                custody=list(custody.items()))
 
     @app.errorhandler(413)
